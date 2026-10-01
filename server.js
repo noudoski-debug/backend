@@ -92,8 +92,38 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Admin Panel UI
+// Admin Panel UI with authentication check
 app.get('/admin', (req, res) => {
+    const key = req.query.key || req.headers['x-admin-key'];
+    
+    // Показать форму входа, если ключ администратора не введен или неверен
+    if (!safeCompare(key, ADMIN_KEY)) {
+        return res.send(`
+            <!DOCTYPE html>
+            <html lang="ru">
+            <head>
+                <meta charset="UTF-8">
+                <title>Авторизация | Админ-панель</title>
+                <style>
+                    body { font-family: monospace; background: #121212; color: #00ff66; padding: 50px; display: flex; justify-content: center; align-items: center; height: 70vh; margin: 0; }
+                    .login-card { border: 1px solid #00ff66; padding: 30px; border-radius: 8px; background: #181818; width: 350px; text-align: center; box-shadow: 0 0 15px rgba(0,255,102,0.2); }
+                    input { width: 90%; padding: 10px; background: #222; color: #fff; border: 1px solid #00ff66; margin: 10px 0; font-family: monospace; }
+                    button { width: 95%; padding: 10px; background: #00ff66; color: #000; font-weight: bold; border: none; cursor: pointer; font-family: monospace; }
+                </style>
+            </head>
+            <body>
+                <div class="login-card">
+                    <h2>🔑 Вход в Админку</h2>
+                    <form action="/admin" method="GET">
+                        <input type="password" name="key" required placeholder="Введите админ-панель пароль"><br/>
+                        <button type="submit">Войти</button>
+                    </form>
+                </div>
+            </body>
+            </html>
+        `);
+    }
+
     const now = new Date();
     res.send(`
         <!DOCTYPE html>
@@ -107,7 +137,7 @@ app.get('/admin', (req, res) => {
                 button { cursor: pointer; background: #00ff66; color: #000; font-weight: bold; border: none; padding: 8px 14px; }
                 button.btn-danger { background: #ff3333; color: #fff; }
                 button.btn-warn { background: #ffaa00; color: #000; }
-                .card { border: 1px solid #333; padding: 20px; border-radius: 8px; max-width: 800px; margin-bottom: 20px; background: #181818; }
+                .card { border: 1px solid #333; padding: 20px; border-radius: 8px; max-width: 850px; margin-bottom: 20px; background: #181818; }
                 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
                 th, td { border: 1px solid #333; padding: 10px; text-align: left; }
                 th { background: #222; color: #00ff66; }
@@ -121,8 +151,7 @@ app.get('/admin', (req, res) => {
             <div class="card">
                 <h3>Генерация нового ключа</h3>
                 <form action="/api/admin/generate" method="POST">
-                    <label>Админ-ключ:</label><br/>
-                    <input type="password" name="adminKey" required placeholder="Введите админ-ключ"><br/><br/>
+                    <input type="hidden" name="adminKey" value="${escapeHtml(key)}">
                     
                     <label>Срок действия ключа:</label><br/>
                     <select name="duration">
@@ -167,12 +196,12 @@ app.get('/admin', (req, res) => {
                                     <td>
                                         <form style="display:inline;" action="/api/admin/reset-hwid" method="POST" onsubmit="return confirm('Сбросить HWID у данного ключа?');">
                                             <input type="hidden" name="key" value="${escapeHtml(k.key)}">
-                                            <input type="password" name="adminKey" required placeholder="Пароль" style="width:70px; padding:4px;">
+                                            <input type="hidden" name="adminKey" value="${escapeHtml(key)}">
                                             <button type="submit" class="btn-warn">Сбросить HWID</button>
                                         </form>
                                         <form style="display:inline;" action="/api/admin/delete-key" method="POST" onsubmit="return confirm('Удалить данный ключ?');">
                                             <input type="hidden" name="key" value="${escapeHtml(k.key)}">
-                                            <input type="password" name="adminKey" required placeholder="Пароль" style="width:70px; padding:4px;">
+                                            <input type="hidden" name="adminKey" value="${escapeHtml(key)}">
                                             <button type="submit" class="btn-danger">Удалить</button>
                                         </form>
                                     </td>
