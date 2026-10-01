@@ -154,8 +154,8 @@ app.get('/admin', async (req, res) => {
                 <div class="login-card">
                     <h2>🔑 Вход в Админку</h2>
                     <form action="/admin" method="GET">
-                        <input type="text" name="adminUser" required placeholder="Логин (по умолчанию Admin)"><br/>
-                        <input type="password" name="adminPass" required placeholder="Пароль (по умолчанию qqbot2323)"><br/>
+                        <input type="text" name="adminUser" required placeholder="Введите логин"><br/>
+                        <input type="password" name="adminPass" required placeholder="Введите пароль"><br/>
                         <button type="submit">Войти</button>
                     </form>
                 </div>
